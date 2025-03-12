@@ -55,6 +55,7 @@ jobs:
 
           # Run Nmake
           wine cmd /c "set TMP=Z:\\build\\tmp& set TEMP=Z:\\build\\tmp& Z:\\build\\tools\\vs6\\VC98\\Bin\\NMAKE.exe"
+          chown -R 1000:1000 $BUILD_DIR
           EOF
 
           chmod +x cnc_build/build_v6.sh
@@ -62,7 +63,6 @@ jobs:
       - name: Run the Docker container and execute the build script
         run: |
           docker run --rm \
-            --user 1000:1000 \
             -v ${{ github.workspace }}/cnc_build:/build/cnc \
             sorcerer86pt/vs6noble:main \
             /bin/bash -c "/build/cnc/build_v6.sh"
