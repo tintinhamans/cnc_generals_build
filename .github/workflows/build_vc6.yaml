@@ -67,14 +67,14 @@ jobs:
             sorcerer86pt/vs6noble:main \
             /bin/bash -c "/build/cnc/build_v6.sh"
 
-      - name: Archive build output
-        run: |
-          mkdir -p artifacts
-          zip -r artifacts/GeneralsMD_Run.zip GeneralsMD/Run
-
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: GeneralsMD_Run
-          path: artifacts/GeneralsMD_Run.zip
-
+          name: Generals
+          path: cnc_build/build/vc6/Generals/generals.exe
+          
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: GeneralsMD
+          path: cnc_build/build/vc6/GeneralsMD/zerohour.exe
