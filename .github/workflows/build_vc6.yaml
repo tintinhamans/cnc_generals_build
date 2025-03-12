@@ -62,6 +62,7 @@ jobs:
       - name: Run the Docker container and execute the build script
         run: |
           docker run --rm \
+            --user 1000:1000 \
             -v ${{ github.workspace }}/cnc_build:/build/cnc \
             sorcerer86pt/vs6noble:main \
             /bin/bash -c "/build/cnc/build_v6.sh"
