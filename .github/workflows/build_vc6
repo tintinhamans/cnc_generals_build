@@ -1,0 +1,67 @@
+name: Build CnC Generals Zero Hour
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out this repository
+        uses: actions/checkout@v4
+
+      - name: Clone CnC Generals Zero Hour repo
+        run: |
+          git clone --branch blade/cmake-build https://github.com/OmniBlade/CnC_Generals_Zero_Hour.git cnc_build
+
+      - name: Create build_v6.sh script
+        run: |
+          cat << 'EOF' > cnc_build/build_v6.sh
+          #!/bin/bash
+          set -e  # make script fail if any error
+
+          # Paths and tools
+          BUILD_DIR="/build/cnc"
+          CMAKE_TOOL="/build/tools/cmake/bin/cmake.exe"
+          MAKE_TOOL="Z:/build/tools/vs6/vc98/bin/nmake.exe"
+          C_COMPILER="Z:/build/tools/vs6/vc98/bin/cl.exe"
+          CXX_COMPILER="Z:/build/tools/vs6/vc98/bin/cl.exe"
+          GIT_TOOL="Z:/build/tools/git/git.exe"
+
+          cd $BUILD_DIR
+
+          # CMake
+          wine "$CMAKE_TOOL" --preset vc6 \
+              -DCMAKE_SYSTEM="Windows" \
+              -DCMAKE_SYSTEM_NAME="Windows" \
+              -DCMAKE_SIZEOF_VOID_P=4 \
+              -DCMAKE_MAKE_PROGRAM="$MAKE_TOOL" \
+              -DCMAKE_C_COMPILER="$C_COMPILER" \
+              -DCMAKE_CXX_COMPILER="$CXX_COMPILER" \
+              -DGIT_EXECUTABLE="$GIT_TOOL" \
+              -DCMAKE_FIND_ROOT_PATH_MODE_PROGRAM=NEVER \
+              -DCMAKE_FIND_ROOT_PATH_MODE_LIBRARY=ONLY \
+              -DCMAKE_FIND_ROOT_PATH_MODE_INCLUDE=ONLY \
+              -DCMAKE_FIND_ROOT_PATH_MODE_PACKAGE=ONLY \
+              -DCMAKE_C_COMPILER_WORKS=1 \
+              -DCMAKE_CXX_COMPILER_WORKS=1
+
+          cd "$BUILD_DIR/build/vc6"
+
+          # Run Nmake
+          wine cmd /c "set TMP=Z:\\build\\tmp& set TEMP=Z:\\build\\tmp& Z:\\build\\tools\\vs6\\VC98\\Bin\\NMAKE.exe"
+          EOF
+
+          chmod +x cnc_build/build_v6.sh
+
+      - name: Run the Docker container and execute the build script
+        run: |
+          docker run --rm \
+            -v ${{ github.workspace }}/cnc_build:/build/cnc \
+            sorcerer86pt/vs6noble:main \
+            /bin/bash -c "/build/cnc/build_v6.sh"
